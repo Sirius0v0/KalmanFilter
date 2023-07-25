@@ -1,5 +1,5 @@
 #include <iostream>
-#include <matrix/Matrix.hpp>
+#include <Matrix/Matrix.hpp>
 #include <vector>
 
 int main()
@@ -23,7 +23,7 @@ int main()
     my_mat2.assign(6, 6);
     std::cout << my_mat2;
     // 2.2. 使用 << 运算符配合初始化列表初始化
-    my_mat2 << std::initializer_list({6, 5, 4, 3, 2});
+    my_mat2 << std::initializer_list({ 6, 5, 4, 3, 2 });
     std::cout << my_mat2;
     // 2.3. 初始化列表赋值
     my_mat3.assign({ 1,2,3,4,5,6,7,8,9 });
@@ -77,7 +77,35 @@ int main()
     // 5.7. 求逆运算
     auto lu_mat_inv = lu_mat.inverse();
     std::cout << "验证求逆：\nlu_mat * lu_mat_inv = \n";
-    std::cout << lu_mat * lu_mat_inv; 
+    std::cout << lu_mat * lu_mat_inv;
+
+    // 异常处理测试
+    kalmans::Matrix<double, 3, 1> vec1;
+    try
+    {
+        vec1.assign({ 1,2,3,4,5,6,7,8,9 });
+    }
+    catch (std::exception& e)
+    {
+        std::cout << e.what();
+    }
+    vec1.assign(3, 7);
+    try
+    {
+        double tmp = vec1(2, 1);
+    }
+    catch (std::exception& e)
+    {
+        std::cout << e.what();
+    }
+    try
+    {
+        double tmp = vec1(3);
+    }
+    catch (std::exception& e)
+    {
+        std::cout << e.what();
+    }
 
     return EXIT_SUCCESS;
 }

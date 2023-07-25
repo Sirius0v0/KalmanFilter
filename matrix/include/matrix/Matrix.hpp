@@ -3,12 +3,15 @@
 #include <cmath>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <stack>
 #include <tuple>
 #include <iostream>
 #include <initializer_list>
 #include <functional>
 #include <algorithm>
+
+#include <KFExceptions/KFExceptions.hpp>
 
 namespace kalmans
 {
@@ -25,7 +28,7 @@ namespace kalmans
             int num = 0;
             for (const auto& elem : mat.data_)
             {
-                std::cout << "\t" << (elem<1e-8?0:elem);
+                std::cout << "\t" << (elem < 1e-8 ? 0 : elem);
                 num++;
                 if (num == mat.get_size())
                     std::cout << "\t]";
@@ -113,7 +116,12 @@ namespace kalmans
     int Matrix<T, Row, Col>::assign(std::initializer_list<T> data_lst)
     {
         if (data_lst.size() > this->get_size())
-            std::cout << "[ERROR] 数据大小超过容量！\n";
+        {
+            std::ostringstream oss;
+            oss << "尝试给大小为" << this->get_size() << "的矩阵赋值个数为"
+                << data_lst.size() << "的值，数据大小超过容量！\n";
+            throw kalmans::LengthException(oss.str());
+        }
 
         int idx = 0;
         for (auto&& elem : data_lst)
@@ -128,7 +136,12 @@ namespace kalmans
     int Matrix<T, Row, Col>::assign(int num, T d)
     {
         if (num > this->get_size())
-            std::cout << "[ERROR] 数量超出数据大小！\n";
+        {
+            std::ostringstream oss;
+            oss << "尝试给大小为" << this->get_size() << "的矩阵赋值个数为"
+                << num << "的值，数据大小超过容量！\n";
+            throw kalmans::LengthException(oss.str());
+        }
 
         int idx = 0;
         for (int i = 0; i < num; ++i)
@@ -217,44 +230,52 @@ namespace kalmans
     template <typename T, int Row, int Col>
     T& Matrix<T, Row, Col>::operator()(int i, int j)
     {
-        if (i < 0 || j < 0)
-            std::cout << "[ERROR] 越界！\n";
-        if (i > this->row_ - 1 || j > this->col_ - 1)
-            std::cout << "[WARN] 未知行为！可能得到的结果不符合预期！\n";
-        if ((i + 1) * (j + 1) > this->get_size())
-            std::cout << "[ERROR] 超出矩阵大小！\n";
+        if (i < 0 || j < 0 || i > this->row_ - 1 || j > this->col_ - 1)
+        {
+            std::ostringstream oss;
+            oss << "尝试访问 (" << i << ", " << j << ") 位置的值，但该索引超出范围！"
+                << "允许的最大索引为 (" << this->get_row() - 1 << ", " << this->get_col() - 1 << ")\n";
+            throw kalmans::OutOfRangeException(oss.str());
+        }
         return this->data_.at(this->col_ * i + j);
     }
 
     template <typename T, int Row, int Col>
     T& Matrix<T, Row, Col>::operator()(int i)
     {
-        if (i < 0)
-            std::cout << "[ERROR] 越界！\n";
-        if (i > this->get_size() - 1)
-            std::cout << "[ERROR] 超出矩阵大小！\n";
+        if (i < 0 || i > this->get_size() - 1)
+        {
+            std::ostringstream oss;
+            oss << "尝试访问 (" << i << ") 位置的值，但该索引超出范围！"
+                << "允许的最大索引为 (" << this->get_size() - 1 << ")\n";
+            throw kalmans::OutOfRangeException(oss.str());
+        }
         return this->data_.at(i);
     }
 
     template <typename T, int Row, int Col>
     T Matrix<T, Row, Col>::operator()(int i, int j) const
     {
-        if (i < 0 || j < 0)
-            std::cout << "[ERROR] 越界！\n";
-        if (i > this->row_ - 1 || j > this->col_ - 1)
-            std::cout << "[WARN] 未知行为！可能得到的结果不符合预期！\n";
-        if ((i + 1) * (j + 1) > this->get_size())
-            std::cout << "[ERROR] 超出矩阵大小！\n";
+        if (i < 0 || j < 0 || i > this->row_ - 1 || j > this->col_ - 1)
+        {
+            std::ostringstream oss;
+            oss << "尝试访问 (" << i << ", " << j << ") 位置的值，但该索引超出范围！"
+                << "允许的最大索引为 (" << this->get_row() - 1 << ", " << this->get_col() - 1 << ")\n";
+            throw kalmans::OutOfRangeException(oss.str());
+        }
         return this->data_.at(this->col_ * i + j);
     }
 
     template <typename T, int Row, int Col>
     T Matrix<T, Row, Col>::operator()(int i) const
     {
-        if (i < 0)
-            std::cout << "[ERROR] 越界！\n";
-        if (i > this->get_size() - 1)
-            std::cout << "[ERROR] 超出矩阵大小！\n";
+        if (i < 0 || i > this->get_size() - 1)
+        {
+            std::ostringstream oss;
+            oss << "尝试访问 (" << i << ") 位置的值，但该索引超出范围！"
+                << "允许的最大索引为 (" << this->get_size() - 1 << ")\n";
+            throw kalmans::OutOfRangeException(oss.str());
+        }
         return this->data_.at(i);
     }
 

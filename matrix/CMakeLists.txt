@@ -1,3 +1,4 @@
 ﻿file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cpp include/*.h include/*.hpp)
-add_library(matrix STATIC ${srcs})
-target_include_directories(matrix PUBLIC include)
+add_library(Matrix STATIC ${srcs})
+target_include_directories(Matrix PUBLIC include)
+target_link_libraries(Matrix PUBLIC KFExceptions)

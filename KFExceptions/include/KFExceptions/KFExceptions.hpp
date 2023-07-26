@@ -11,15 +11,27 @@ namespace kalmans
             :logic_error(message){}
     };
 
-    struct LengthException : public KFException
+    struct LengthError : public KFException
     {
-        explicit LengthException(const std::string& message)
-            :KFException("[LengthException] "+message) {}
+        explicit LengthError(const std::string& message)
+            :KFException("[LengthError] "+message) {}
     };
 
-    struct OutOfRangeException : public KFException
+    struct OutOfRangeError : public KFException
     {
-        explicit OutOfRangeException(const std::string& message)
-            :KFException("[OutOfRangeException] "+message){}
+        explicit OutOfRangeError(const std::string& message)
+            :KFException("[OutOfRangeError] "+message){}
+    };
+
+    struct ValueError : public KFException
+    {
+        explicit ValueError(const std::string& message)
+            :KFException("[ValueError] "+message){}
+    };
+
+    struct ZeroDivisionError : public KFException
+    {
+        explicit ZeroDivisionError(const std::string& message)
+            :KFException("[ZeroDivisionError] "+message){}
     };
 }

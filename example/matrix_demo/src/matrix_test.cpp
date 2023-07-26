@@ -69,19 +69,11 @@ int main()
     std::cout << "A * B^T = \n" << A * B.transpose() << '\n';
     // 5.6. LU/LUP分解
     kalmans::Matrix<double, 3, 3> lu_mat1{2, 1, 2, 4, 5, 4, 6, -3, 5};
-    kalmans::Matrix<double, 2, 2> lu_mat2{0,1,0,1};
+    kalmans::Matrix<double, 2, 2> lu_mat2{0, 1, 0, 1};
     auto [L1, U1, P1] = lu_mat1.lup_decomposition();
-    std::cout << "LUP分解示例1：\n";
-    std::cout << lu_mat1 << "=\n";
-    std::cout << L1 << "*\n";
-    std::cout << U1 << "*\n";
-    std::cout << P1;
+    std::cout << "LUP分解示例1：\n" << lu_mat1 << "=\n" << L1 << "*\n" << U1 << "*\n" << P1;
     auto [L2, U2, P2] = lu_mat2.lup_decomposition();
-    std::cout << "LUP分解示例2：\n";
-    std::cout << lu_mat2 << "=\n";
-    std::cout << L2 << "*\n";
-    std::cout << U2 << "*\n";
-    std::cout << P2;
+    std::cout << "LUP分解示例2：\n" << lu_mat2 << "=\n" << L2 << "*\n" << U2 << "*\n" << P2;
     // 5.7. 求逆运算
     auto lu_mat_inv = lu_mat1.inverse();
     std::cout << "验证求逆：\nlu_mat * lu_mat_inv = \n";

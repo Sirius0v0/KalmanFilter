@@ -67,45 +67,25 @@ int main()
     kalmans::Matrix<int, 2, 3> A{2, 3, 4, 5, 6, 7};
     kalmans::Matrix B = A;
     std::cout << "A * B^T = \n" << A * B.transpose() << '\n';
-    // 5.6. LU分解
-    kalmans::Matrix<double, 3, 3> lu_mat{2, 1, 2, 4, 5, 4, 6, -3, 5};
-    auto [L, U] = lu_mat.lu_decomposition();
-    std::cout << "LU分解示例：\n";
-    std::cout << lu_mat << "=\n";
-    std::cout << L << "*\n";
-    std::cout << U;
+    // 5.6. LU/LUP分解
+    kalmans::Matrix<double, 3, 3> lu_mat1{2, 1, 2, 4, 5, 4, 6, -3, 5};
+    kalmans::Matrix<double, 2, 2> lu_mat2{0,1,0,1};
+    auto [L1, U1, P1] = lu_mat1.lup_decomposition();
+    std::cout << "LUP分解示例1：\n";
+    std::cout << lu_mat1 << "=\n";
+    std::cout << L1 << "*\n";
+    std::cout << U1 << "*\n";
+    std::cout << P1;
+    auto [L2, U2, P2] = lu_mat2.lup_decomposition();
+    std::cout << "LUP分解示例2：\n";
+    std::cout << lu_mat2 << "=\n";
+    std::cout << L2 << "*\n";
+    std::cout << U2 << "*\n";
+    std::cout << P2;
     // 5.7. 求逆运算
-    auto lu_mat_inv = lu_mat.inverse();
+    auto lu_mat_inv = lu_mat1.inverse();
     std::cout << "验证求逆：\nlu_mat * lu_mat_inv = \n";
-    std::cout << lu_mat * lu_mat_inv;
-
-    // 异常处理测试
-    kalmans::Matrix<double, 3, 1> vec1;
-    try
-    {
-        vec1.assign({ 1,2,3,4,5,6,7,8,9 });
-    }
-    catch (std::exception& e)
-    {
-        std::cout << e.what();
-    }
-    vec1.assign(3, 7);
-    try
-    {
-        double tmp = vec1(2, 1);
-    }
-    catch (std::exception& e)
-    {
-        std::cout << e.what();
-    }
-    try
-    {
-        double tmp = vec1(3);
-    }
-    catch (std::exception& e)
-    {
-        std::cout << e.what();
-    }
+    std::cout << lu_mat1 * lu_mat_inv;
 
     return EXIT_SUCCESS;
 }

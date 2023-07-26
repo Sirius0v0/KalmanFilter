@@ -7,6 +7,7 @@
 #include <stack>
 #include <tuple>
 #include <iostream>
+#include <iomanip>
 #include <initializer_list>
 #include <functional>
 #include <algorithm>
@@ -28,7 +29,7 @@ namespace kalmans
             int num = 0;
             for (const auto& elem : mat.data_)
             {
-                std::cout << "\t" << (elem < 1e-8 ? 0 : elem);
+                std::cout << std::fixed << std::setprecision(4) << "\t" << (fabs(elem) < 1e-8 ? 0 : elem);
                 num++;
                 if (num == mat.get_size())
                     std::cout << "\t]";
@@ -63,6 +64,7 @@ namespace kalmans
         void swap(Matrix& mat) noexcept;
         int assign(std::initializer_list<T> data_lst);
         int assign(int num, T d);
+        void resize(int new_row, int new_col);
         T& at(int i, int j);
         T& at(int i);
         T at(int i, int j) const;
@@ -75,8 +77,10 @@ namespace kalmans
         template<int NewCol>
         Matrix<T, Row, NewCol> operator*(const Matrix<T, Col, NewCol>& mat) const;
 
-        std::tuple<Matrix<double, Row, Col>, Matrix<double, Row, Col>> lu_decomposition() const;
+        std::tuple<Matrix<double, Row, Col>, Matrix<double, Row, Col>, Matrix<double, Row, Col>> lup_decomposition() const;
         Matrix<double, Row, Col> inverse() const;
+
+        static Matrix Eye();
 
     private:
 
@@ -91,7 +95,9 @@ namespace kalmans
             const std::string& col_str, int row = Row, int col = Col);
 
         void row_swap(int i, int j);
+        void row_swap(int i, int j, int start, int end);
         void col_swap(int i, int j);
+        void col_swap(int i, int j, int start, int end);
     };
 
     template<typename T, int Row, int Col>
@@ -119,8 +125,8 @@ namespace kalmans
         {
             std::ostringstream oss;
             oss << "尝试给大小为" << this->get_size() << "的矩阵赋值个数为"
-                << data_lst.size() << "的值，数据大小超过容量！\n";
-            throw kalmans::LengthException(oss.str());
+                << data_lst.size() << "的值，数据大小超过容量\n";
+            throw kalmans::LengthError(oss.str());
         }
 
         int idx = 0;
@@ -139,8 +145,8 @@ namespace kalmans
         {
             std::ostringstream oss;
             oss << "尝试给大小为" << this->get_size() << "的矩阵赋值个数为"
-                << num << "的值，数据大小超过容量！\n";
-            throw kalmans::LengthException(oss.str());
+                << num << "的值，数据大小超过容量\n";
+            throw kalmans::LengthError(oss.str());
         }
 
         int idx = 0;
@@ -150,6 +156,14 @@ namespace kalmans
             idx++;
         }
         return idx;
+    }
+
+    template <typename T, int Row, int Col>
+    void Matrix<T, Row, Col>::resize(int new_row, int new_col)
+    {
+        this->row_ = new_row;
+        this->col_ = new_col;
+        this->data_.resize(new_row * new_col, 0);
     }
 
     template<typename T, int Row, int Col>
@@ -165,9 +179,9 @@ namespace kalmans
     }
 
     template <typename T, int Row, int Col>
-    void Matrix<T, Row, Col>::row_swap(int i, int j)
+    void Matrix<T, Row, Col>::row_swap(int i, int j, int start, int end)
     {
-        for (int k = 0; k < this->get_col(); ++k)
+        for (int k = start; k < end; ++k)
         {
             T tmp = (*this)(i, k);
             (*this)(i, k) = (*this)(j, k);
@@ -176,14 +190,26 @@ namespace kalmans
     }
 
     template <typename T, int Row, int Col>
-    void Matrix<T, Row, Col>::col_swap(int i, int j)
+    void Matrix<T, Row, Col>::row_swap(int i, int j)
     {
-        for (int k = 0; k < this->get_row(); ++k)
+        this->row_swap(i, j, 0, this->get_col());
+    }
+
+    template <typename T, int Row, int Col>
+    void Matrix<T, Row, Col>::col_swap(int i, int j, int start, int end)
+    {
+        for (int k = start; k < end; ++k)
         {
             T tmp = (*this)(k, i);
             (*this)(k, i) = (*this)(k, j);
             (*this)(k, j) = tmp;
         }
+    }
+
+    template <typename T, int Row, int Col>
+    void Matrix<T, Row, Col>::col_swap(int i, int j)
+    {
+        this->col_swap(i, j, 0, this->get_row());
     }
 
     template <typename T, int Row, int Col>
@@ -233,9 +259,9 @@ namespace kalmans
         if (i < 0 || j < 0 || i > this->row_ - 1 || j > this->col_ - 1)
         {
             std::ostringstream oss;
-            oss << "尝试访问 (" << i << ", " << j << ") 位置的值，但该索引超出范围！"
+            oss << "尝试访问 (" << i << ", " << j << ") 位置的值，但该索引超出范围："
                 << "允许的最大索引为 (" << this->get_row() - 1 << ", " << this->get_col() - 1 << ")\n";
-            throw kalmans::OutOfRangeException(oss.str());
+            throw kalmans::OutOfRangeError(oss.str());
         }
         return this->data_.at(this->col_ * i + j);
     }
@@ -246,9 +272,9 @@ namespace kalmans
         if (i < 0 || i > this->get_size() - 1)
         {
             std::ostringstream oss;
-            oss << "尝试访问 (" << i << ") 位置的值，但该索引超出范围！"
+            oss << "尝试访问 (" << i << ") 位置的值，但该索引超出范围："
                 << "允许的最大索引为 (" << this->get_size() - 1 << ")\n";
-            throw kalmans::OutOfRangeException(oss.str());
+            throw kalmans::OutOfRangeError(oss.str());
         }
         return this->data_.at(i);
     }
@@ -259,9 +285,9 @@ namespace kalmans
         if (i < 0 || j < 0 || i > this->row_ - 1 || j > this->col_ - 1)
         {
             std::ostringstream oss;
-            oss << "尝试访问 (" << i << ", " << j << ") 位置的值，但该索引超出范围！"
+            oss << "尝试访问 (" << i << ", " << j << ") 位置的值，但该索引超出范围："
                 << "允许的最大索引为 (" << this->get_row() - 1 << ", " << this->get_col() - 1 << ")\n";
-            throw kalmans::OutOfRangeException(oss.str());
+            throw kalmans::OutOfRangeError(oss.str());
         }
         return this->data_.at(this->col_ * i + j);
     }
@@ -272,9 +298,9 @@ namespace kalmans
         if (i < 0 || i > this->get_size() - 1)
         {
             std::ostringstream oss;
-            oss << "尝试访问 (" << i << ") 位置的值，但该索引超出范围！"
+            oss << "尝试访问 (" << i << ") 位置的值，但该索引超出范围："
                 << "允许的最大索引为 (" << this->get_size() - 1 << ")\n";
-            throw kalmans::OutOfRangeException(oss.str());
+            throw kalmans::OutOfRangeError(oss.str());
         }
         return this->data_.at(i);
     }
@@ -334,7 +360,12 @@ namespace kalmans
     {
         Matrix tmp(*this);
         if (tmp.get_col() != mat.get_col() || tmp.get_row() != mat.get_row())
-            std::cout << "[ERROR] 维数不匹配\n";
+        {
+            std::ostringstream oss;
+            oss << "矩阵形状 (" << tmp.get_row() << ", " << tmp.get_col() << ") 与 ("
+                << mat.get_row() << ", " << mat.get_col() << ") 不匹配\n";
+            throw kalmans::ValueError(oss.str());
+        }
         for (int i = 0; i < mat.get_size(); ++i)
         {
             tmp(i) += mat(i);
@@ -362,7 +393,13 @@ namespace kalmans
     Matrix<T, Row, NewCol> Matrix<T, Row, Col>::operator*(const Matrix<T, Col, NewCol>& mat) const
     {
         if (this->get_col() != mat.get_row())
-            std::cout << "[ERROR] 矩阵维度不匹配！\n";
+        {
+            std::ostringstream oss;
+            oss << "矩阵形状 (" << this->get_row() << ", " << this->get_col() << ") 与 ("
+                << mat.get_row() << ", " << mat.get_col() << ") 不匹配："
+                << this->get_col() << "!=" << mat.get_row() << '\n';
+            throw kalmans::ValueError(oss.str());
+        }
         Matrix<T, Row, NewCol> tmp;
         for (int i = 0; i < tmp.get_row(); ++i)
             for (int j = 0; j < tmp.get_col(); ++j)
@@ -374,71 +411,63 @@ namespace kalmans
     }
 
     template <typename T, int Row, int Col>
-    std::tuple<Matrix<double, Row, Col>, Matrix<double, Row, Col>> Matrix<T, Row, Col>::lu_decomposition() const
+    std::tuple<Matrix<double, Row, Col>, Matrix<double, Row, Col>, Matrix<double, Row, Col>> Matrix<T, Row, Col>::lup_decomposition() const
     {
         if (this->get_row() != this->get_col())
-            std::cout << "[ERROR] 矩阵维数不匹配！\n";
-        Matrix<double, Row, Col> L, U;
-        for (int i = 0; i < Row; ++i)
-            L(i, i) = 1;
-
-        for (int i = 0; i < Row; ++i)
         {
-            // 计算 U(i,j) | i <= j
-            for (int j = i; j < Col; ++j)
+            std::ostringstream oss;
+            oss << "矩阵形状 (" << this->get_row() << ", " << this->get_col() << ") 非方阵，LUP分解需要矩阵为方阵\n";
+            throw kalmans::ValueError(oss.str());
+        }
+        Matrix<double, Row, Col> U(*this);
+        auto L = Matrix<double, Row, Col>::Eye();
+        auto P = Matrix<double, Row, Col>::Eye();
+
+        for (int j = 0; j < Col - 1; ++j)
+        {
+            // 选择列主元
+            int principal = j;
+            T max = fabs(U(principal, j));
+            // 只遍历当前主元下方的元素
+            for (int i = j + 1; i < Row; ++i)
             {
-                double sum = 0.0;
-                for (int k = 0; k <= i - 1; ++k)
+                if (fabs(U(i, j)) > max)
                 {
-                    sum += L(i, k) * U(k, j);
+                    principal = i;
+                    max = fabs(U(i, j));
                 }
-                U(i, j) = (*this)(i, j) - sum;
+            }
+            if (j != principal) // 选择主元交换
+            {
+                // 交换 U(j,j:n) <-> U(i,j:n)
+                U.row_swap(j, principal, j, Col);
+                // 交换 L(j,1:j-1) <-> L(i,1:j-1)
+                L.row_swap(j, principal, 0, j - 1);
+                // 交换 P(j,1:n) <-> P(i,1:n)
+                P.row_swap(j, principal);
             }
 
-            // 计算 L(i,j) | i > j
-            for (int j = i + 1; j < Col; ++j)
+            // 列主元如果为 0，则跳过该列的消元
+            if (fabs(U(j, j)) < 1e-7)
+                continue;
+            // 计算 L 和 U
+            for (int i = j + 1; i < Row; ++i)
             {
-                double sum = 0.0;
-                for (int k = 0; k <= i - 1; ++k)
+                L(i, j) = U(i, j) / U(j, j) / 1.0;
+                for (int k = j; k < Row; ++k)
                 {
-                    sum += L(j, k) * U(k, i);
+                    U(i, k) -= L(i, j) * U(j, k);
                 }
-                if (fabs(U(i, i)) < 1e-7)
-                    std::cout << "[ERROR] 除数不能为0！\n";
-                L(j, i) = ((*this)(j, i) - sum) / U(i, i) / 1.0;
             }
         }
 
-        return std::make_tuple(L, U);
+        return std::make_tuple(L, U, P);
     }
 
     template <typename T, int Row, int Col>
     Matrix<double, Row, Col> Matrix<T, Row, Col>::inverse() const
     {
-        Matrix tmp(*this);
-        // 选列主元
-        std::stack<int> principal_swap_idx;
-        for (int j = 0; j < Col - 1; ++j)     // 最后一列不用管
-        {
-            int principal = j;
-            T max = fabs(tmp(principal, j));
-            // 只遍历当前主元下方的元素
-            for (int i = j + 1; i < Row; ++i)
-            {
-                if (fabs(tmp(i, j)) > max)
-                {
-                    principal = i;
-                    max = fabs(tmp(i, j));
-                }
-            }
-            if (j != principal) // 选择主元，交换并记录
-            {
-                tmp.row_swap(j, principal);
-            }
-            principal_swap_idx.push(principal);
-        }
-
-        auto [L_, U_] = tmp.lu_decomposition();
+        auto [L_, U_, P_] = this->lup_decomposition();
 
         // L 求逆
         for (int i = 0; i < L_.get_row(); ++i)
@@ -482,16 +511,20 @@ namespace kalmans
             }
         }
 
-        Matrix<double, Row, Col> inv = U_ * L_;
-        for (int j = Col - 2; j >= 0; --j)
+        return Matrix<double, Row, Col>(U_ * L_ * P_);
+    }
+
+    template <typename T, int Row, int Col>
+    Matrix<T, Row, Col> Matrix<T, Row, Col>::Eye()
+    {
+        Matrix<T, Row, Col> eye;
+
+        for (int i = 0; i < Row; ++i)
         {
-            int principal = principal_swap_idx.top();
-            principal_swap_idx.pop();
-            if (j == principal)
-                continue;
-            inv.col_swap(j, principal);
+            eye(i, i) = 1;
         }
-        return inv;
+
+        return eye;
     }
 
 }

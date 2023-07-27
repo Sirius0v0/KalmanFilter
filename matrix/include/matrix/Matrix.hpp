@@ -93,8 +93,9 @@ namespace kalmans
     }
 
     template<typename T>
-    std::istream& operator>> (std::istream& is, const Matrix<T>& mat)
+    std::istream& operator>> (std::istream& is, Matrix<T>& mat)
     {
+        mat.read(is);
         return is;
     }
 
@@ -166,16 +167,20 @@ namespace kalmans
         os.setf(std::ios::fixed, std::ios::floatfield);
         os.precision(IOFormat::precision);
 
+        if (IOFormat::add_head)
+            os << "[ " << this->get_row() << " , " << this->get_col() << " ]\n";
+
         os << IOFormat::start_delimiter;
         size_t num = 0;
         for (const auto& elem : this->data_)
         {
-            os << IOFormat::elem_delimiter << elem;
             num++;
-            if (num == this->get_size())
-                os << IOFormat::elem_delimiter << IOFormat::end_delimiter;
-            if (num % this->get_col() == 0)
-                os << IOFormat::row_delimiter;
+            os << " " << elem << " "
+                << (num % this->get_col() == 0 ?
+                        (num == this->get_size() ? 
+                        (IOFormat::end_delimiter + "\n") :
+                        IOFormat::row_delimiter) :
+                    IOFormat::elem_delimiter);
         }
     }
 
@@ -190,30 +195,22 @@ namespace kalmans
         int col = 0;
         matrixdata<T> data;
 
+        if (IOFormat::add_head)
+            is >> buf >> row >> buf >> col >> buf;
+        data.resize(row * col, 0);
+
         if (IOFormat::cache_start_delim)
             is >> buf;
 
-        if (IOFormat::cache_row_delim)
+        int num = 0;
+        for (auto&& elem : data)
         {
-            if (IOFormat::cache_elem_delim)
-            {
-
-            }
-            else
-            {
-
-            }
-        }
-        else
-        {
-            if (IOFormat::cache_elem_delim)
-            {
-
-            }
-            else
-            {
-
-            }
+            is >> elem;
+            num++;
+            if (IOFormat::cache_elem_delim && num % col != 0)
+                is >> buf;
+            if (IOFormat::cache_row_delim && num % col == 0)
+                is >> buf;
         }
 
         if (IOFormat::cache_end_delim)

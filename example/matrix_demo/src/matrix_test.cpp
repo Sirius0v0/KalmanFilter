@@ -1,11 +1,12 @@
 #include <fstream>
 #include <iostream>
 #include <Matrix/Matrix.hpp>
-#include <vector>
+#include <filesystem>
 
 int main()
 {
     std::cout << "Hello My Matrix~\n";
+    kalmans::IOFormat::set_add_head(false);
     std::cout << "=========== 构造一个矩阵 ===========\n";
     // 1.1. 默认构造
     kalmans::Matrix<int> my_mat1;
@@ -92,6 +93,49 @@ int main()
         kalmans::IOFormat::set_end_delim("]") << lu_mat1 * lu_mat_inv;
 
     std::cout << "=========== 数据读写 ===========\n";
+    kalmans::IOFormat::set_add_head(true);
+    namespace fs = std::filesystem;
+    std::string filename = "./text_mat.txt";
+
+    if (!fs::exists(filename)) {
+        // 文件不存在，打开文件
+        std::ofstream file(filename);
+        if (file.is_open()) {
+            // 文件成功打开，进行操作
+            file << kalmans::IOFormat::set_precision(8)
+                << kalmans::IOFormat::set_elem_delim(" ")
+                << kalmans::IOFormat::set_row_delim("\n")
+                << kalmans::IOFormat::set_start_delim("[")
+                << kalmans::IOFormat::set_end_delim("]")
+                << lu_mat_inv;
+            file.close();
+        }
+        else {
+            std::cerr << "文件打开失败\n";
+        }
+    }
+
+    kalmans::Matrix<double> read_mat;
+    if (fs::exists(filename)) {
+        std::ifstream ifs(filename);
+        if (ifs.is_open()) {
+            // 文件成功打开，进行操作
+            ifs >> kalmans::IOFormat::set_precision(6)
+                >> kalmans::IOFormat::set_elem_delim(" ")
+                >> kalmans::IOFormat::set_row_delim("\n")
+                >> kalmans::IOFormat::set_start_delim("[")
+                >> kalmans::IOFormat::set_end_delim("]")
+                >> read_mat;
+            ifs.close();
+        }
+        else {
+            std::cerr << "文件打开失败\n";
+        }
+    }
+    std::cout << kalmans::IOFormat::set_add_head(false)
+        << kalmans::IOFormat::set_elem_delim(" ")
+        << kalmans::IOFormat::set_row_delim("\n")
+        << "读取到的矩阵：\n" << read_mat;
 
     return EXIT_SUCCESS;
 }

@@ -92,6 +92,22 @@ int main()
     std::cout << kalmans::IOFormat::set_precision(4) << kalmans::IOFormat::set_start_delim("[") <<
         kalmans::IOFormat::set_end_delim("]") << lu_mat1 * lu_mat_inv;
 
+    std::cout << "=========== 特殊矩阵构造 ===========\n";
+    // 6.1. 单位阵
+    auto eye1 = kalmans::Matrix<int>::Eye(3);
+    std::cout << eye1;
+    // 6.2. 对角阵
+    auto diag1 = kalmans::Matrix<double>::Diag({ 1,2,3,4,5,6 });
+    std::cout << diag1;
+    // 6.3. 随机阵
+    unsigned int seed = 10;
+    auto rand1 = kalmans::Matrix<double>::Random(3, 4);
+    std::cout << rand1;
+    auto rand2 = kalmans::Matrix<double>::Random(3, 4, seed);
+    std::cout << rand2;
+    auto rand3 = kalmans::Matrix<int>::Random(2, 4, 0, 10);
+    std::cout << rand3;
+
     std::cout << "=========== 数据读写 ===========\n";
     kalmans::IOFormat::set_add_head(true);
     namespace fs = std::filesystem;

@@ -2,3 +2,4 @@
 add_library(Matrix STATIC ${srcs})
 target_include_directories(Matrix PUBLIC include)
 target_link_libraries(Matrix PUBLIC KFExceptions)
+target_link_libraries(Matrix PUBLIC utils)

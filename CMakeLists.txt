@@ -12,6 +12,8 @@ project(KalmanFilterDemo LANGUAGES CXX)
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
 
 # 包含子项目
+add_subdirectory (Utils)
 add_subdirectory (KFExceptions)
 add_subdirectory (Matrix)
+add_subdirectory (Filter)
 add_subdirectory (example)

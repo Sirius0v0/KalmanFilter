@@ -1,1 +1,3 @@
 add_subdirectory(matrix_demo)
+add_subdirectory(filter_demo)
+add_subdirectory(utils_demo)

@@ -17,6 +17,7 @@
 
 #include <KFExceptions/KFExceptions.hpp>
 #include <matrix/IOFormat.hpp>
+#include <Utils/random.hpp>
 
 namespace kalmans
 {
@@ -75,6 +76,11 @@ namespace kalmans
         Matrix<double> inverse() const;
 
         static Matrix Eye(int dim);
+        static Matrix Diag(std::initializer_list<T> diag_lst);
+        static Matrix Random(int m, int n, T min, T max,
+            unsigned int seed = std::random_device()());
+        static Matrix Random(int m, int n,
+            unsigned int seed = std::random_device()());
 
     private:
 
@@ -177,7 +183,7 @@ namespace kalmans
             num++;
             os << " " << elem << " "
                 << (num % this->get_col() == 0 ?
-                        (num == this->get_size() ? 
+                    (num == this->get_size() ?
                         (IOFormat::end_delimiter + "\n") :
                         IOFormat::row_delimiter) :
                     IOFormat::elem_delimiter);
@@ -586,4 +592,44 @@ namespace kalmans
         return eye;
     }
 
+    template <typename T>
+    Matrix<T> Matrix<T>::Diag(std::initializer_list<T> diag_lst)
+    {
+        int dim = diag_lst.size();
+        Matrix<T> diag(dim, dim);
+
+        int i = 0;
+        for (const auto& elem : diag_lst)
+        {
+            diag(i, i) = elem;
+            i++;
+        }
+        return diag;
+    }
+
+    template <typename T>
+    Matrix<T> Matrix<T>::Random(int m, int n, T min, T max, unsigned int seed)
+    {
+        Matrix<T> rand(m, n);
+
+        for (int i = 0; i < rand.get_size(); ++i)
+        {
+            rand(i) = kalmans::Random<T>::uniform(min, max, seed);
+        }
+
+        return rand;
+    }
+
+    template <typename T>
+    Matrix<T> Matrix<T>::Random(int m, int n, unsigned int seed)
+    {
+        Matrix<T> rand(m, n);
+
+        for (int i = 0; i < rand.get_size(); ++i)
+        {
+            rand(i) = kalmans::Random<T>::uniform(seed);
+        }
+
+        return rand;
+    }
 }

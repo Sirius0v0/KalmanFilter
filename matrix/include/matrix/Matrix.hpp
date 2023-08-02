@@ -16,7 +16,7 @@
 #include <iomanip>
 
 #include <KFExceptions/KFExceptions.hpp>
-#include <matrix/IOFormat.hpp>
+#include <Matrix/IOFormat.h>
 #include <Utils/random.hpp>
 
 namespace kalmans
@@ -55,6 +55,7 @@ namespace kalmans
         void swap(Matrix& mat) noexcept;
         int assign(std::initializer_list<T> data_lst);
         int assign(int num, T d);
+        int assign(const Matrix& mat, int begin);
         void resize(int new_row, int new_col);
         T& at(int i, int j);
         T& at(int i);
@@ -68,19 +69,28 @@ namespace kalmans
 
         Matrix transpose() const;
         Matrix operator+(const Matrix& mat) const;
+        Matrix& operator+=(const Matrix& mat);
         Matrix operator-(const Matrix& mat) const;
+        Matrix& operator-=(const Matrix& mat);
 
         Matrix operator*(const Matrix& mat) const;
+        Matrix operator*(T num) const;
+        Matrix& operator*=(const Matrix& mat);
+        Matrix& operator*=(T num);
 
         std::tuple<Matrix<double>, Matrix<double>, Matrix<double>> lup_decomposition() const;
         Matrix<double> inverse() const;
 
         static Matrix Eye(int dim);
         static Matrix Diag(std::initializer_list<T> diag_lst);
+        static Matrix BlkDiag(std::initializer_list<Matrix> diag_lst);
+        static Matrix BlkDiag(Matrix&& mat, int num);
         static Matrix Random(int m, int n, T min, T max,
             unsigned int seed = std::random_device()());
         static Matrix Random(int m, int n,
             unsigned int seed = std::random_device()());
+
+        static Matrix ver_mat_cat(std::initializer_list<Matrix> mats);
 
     private:
 
@@ -237,7 +247,8 @@ namespace kalmans
     template <typename T>
     Matrix<T>& Matrix<T>::operator=(const Matrix& mat)
     {
-        this->swap(Matrix(mat));
+        Matrix tmp(mat);
+        this->swap(tmp);
         return *this;
     }
 
@@ -350,6 +361,22 @@ namespace kalmans
     }
 
     template <typename T>
+    int Matrix<T>::assign(const Matrix& mat, int begin)
+    {
+        int num = mat.get_size() + begin;
+        if (num > this->get_size())
+        {
+            std::ostringstream oss;
+            oss << "尝试给大小为" << this->get_size() << "的矩阵赋值个数为"
+                << num << "的值，数据大小超过容量\n";
+            throw kalmans::LengthError(oss.str());
+        }
+
+        std::copy(mat.data_.begin(), mat.data_.end(), this->data_.begin() + begin);
+        return mat.get_size();
+    }
+
+    template <typename T>
     void Matrix<T>::resize(int new_row, int new_col)
     {
         this->row_ = new_row;
@@ -448,10 +475,24 @@ namespace kalmans
     }
 
     template <typename T>
+    Matrix<T>& Matrix<T>::operator+=(const Matrix& mat)
+    {
+        (*this) = (*this) + mat;
+        return *this;
+    }
+
+    template <typename T>
     Matrix<T> Matrix<T>::operator-(const Matrix& mat) const
     {
         Matrix tmp(*this);
         return tmp + (-mat);
+    }
+
+    template <typename T>
+    Matrix<T>& Matrix<T>::operator-=(const Matrix& mat)
+    {
+        (*this) = (*this) - mat;
+        return *this;
     }
 
     template <typename T>
@@ -473,6 +514,31 @@ namespace kalmans
                     tmp(i, j) += (*this)(i, k) * mat(k, j);
                 }
         return tmp;
+    }
+
+    template <typename T>
+    Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& mat)
+    {
+        (*this) = (*this) * mat;
+        return *this;
+    }
+
+    template <typename T>
+    Matrix<T> Matrix<T>::operator*(T num) const
+    {
+        Matrix<T> tmp(*this);
+        std::for_each(tmp.data_.begin(), tmp.data_.end(), [=](T& elem)
+            {
+                elem *= num;
+            });
+        return tmp;
+    }
+
+    template <typename T>
+    Matrix<T>& Matrix<T>::operator*=(T num)
+    {
+        (*this) = (*this) * num;
+        return *this;
     }
 
     template <typename T>
@@ -608,6 +674,61 @@ namespace kalmans
     }
 
     template <typename T>
+    Matrix<T> Matrix<T>::BlkDiag(std::initializer_list<Matrix> diag_lst)
+    {
+        int row_dim = 0;
+        int col_dim = 0;
+        std::for_each(diag_lst.begin(), diag_lst.end(), [&](const Matrix& mat)
+            {
+                row_dim += mat.get_row();
+                col_dim += mat.get_col();
+            });
+        Matrix<T> blkdiag(row_dim, col_dim);
+
+        int relative_row_offset = 0;
+        int relative_col_offset = 0;
+        for (const auto& mat : diag_lst)
+        {
+            for (int i = 0; i < mat.get_row(); ++i)
+            {
+                for (int j = 0; j < mat.get_col(); ++j)
+                {
+                    blkdiag(relative_row_offset + i, relative_col_offset + j)
+                        = mat(i, j);
+                }
+            }
+            relative_row_offset += mat.get_row();
+            relative_col_offset += mat.get_col();
+        }
+        return blkdiag;
+    }
+
+    template <typename T>
+    Matrix<T> Matrix<T>::BlkDiag(Matrix&& mat, int num)
+    {
+        int row_dim = mat.get_row() * num;
+        int col_dim = mat.get_col() * num;
+        Matrix<T> blkdiag(row_dim, col_dim);
+
+        int relative_row_offset = 0;
+        int relative_col_offset = 0;
+        for (int idx = 0; idx < num; ++idx)
+        {
+            for (int i = 0; i < mat.get_row(); ++i)
+            {
+                for (int j = 0; j < mat.get_col(); ++j)
+                {
+                    blkdiag(relative_row_offset + i, relative_col_offset + j)
+                        = mat(i, j);
+                }
+            }
+            relative_row_offset += mat.get_row();
+            relative_col_offset += mat.get_col();
+        }
+        return blkdiag;
+    }
+
+    template <typename T>
     Matrix<T> Matrix<T>::Random(int m, int n, T min, T max, unsigned int seed)
     {
         Matrix<T> rand(m, n);
@@ -632,4 +753,42 @@ namespace kalmans
 
         return rand;
     }
+
+    template <typename T>
+    Matrix<T> Matrix<T>::ver_mat_cat(std::initializer_list<Matrix> mats)
+    {
+        int col = -1;
+        int row_dim = 0;
+        std::for_each(mats.begin(), mats.end(), [&](const Matrix& mat)
+            {
+                row_dim += mat.get_row();
+                if (col == -1)
+                {
+                    col = mat.get_col();
+                }
+                else
+                {
+                    if (col != mat.get_col())
+                    {
+                        std::ostringstream oss;
+                        oss << "矩阵形状 (*" << ", " << mat.get_row() << ") 与 (*"
+                            << ", " << col << ") 不匹配\n";
+                        throw kalmans::ValueError(oss.str());
+                    }
+                }
+            });
+
+        Matrix<T> cated_mat(row_dim, col);
+        int mat_size = 0;
+        for (const auto& mat : mats)
+        {
+            auto begin_with_offset = cated_mat.data_.begin() + mat_size;
+            std::copy(mat.data_.begin(), mat.data_.end(),
+                begin_with_offset);
+            mat_size += mat.get_size();
+        }
+
+        return cated_mat;
+    }
+
 }

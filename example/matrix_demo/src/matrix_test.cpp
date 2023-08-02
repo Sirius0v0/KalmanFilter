@@ -36,10 +36,17 @@ int main()
     // 2.4. 所有元素赋值 8
     kalmans::Matrix<int> my_mat7(3, 4);
     my_mat7 = 8;
+    my_mat1 = my_mat7;
     std::cout << my_mat7;
+    std::cout << my_mat1;
     // 2.5. 等号运算符赋值
     kalmans::Matrix my_mat8 = my_mat7;
     std::cout << my_mat8;
+    // 2.6. 利用矩阵为为矩阵赋值
+    auto submat = kalmans::Matrix<double>::Random(1, 3);
+    kalmans::Matrix<double> mat9(3, 3);
+    mat9.assign(submat, 3);
+    std::cout << mat9;
 
     std::cout << "=========== 索引与修改 ===========\n";
     std::cout << "  + 修改前mat3 = \n" << my_mat3 << '\n';
@@ -72,13 +79,21 @@ int main()
     std::cout << "-mat3 = \n" << -my_mat3 << '\n';
     // 5.3. 加法运算
     std::cout << "mat2 + mat3 = \n" << my_mat2 + my_mat3 << '\n';
+    my_mat2 += my_mat3;
+    std::cout << "mat2矩阵：\n" << my_mat2 << '\n';
     // 5.4. 减法运算
+    my_mat2 -= my_mat3;
+    std::cout << "mat2矩阵：\n" << my_mat2 << '\n';
     std::cout << "mat2 - mat3 = \n" << my_mat2 - my_mat3 << '\n';
     std::cout << "-mat3 + mat2 = \n" << -my_mat3 + my_mat2 << '\n';
     // 5.5. 乘法运算
     kalmans::Matrix<int> A(2, 3, { 2, 3, 4, 5, 6, 7 });
     kalmans::Matrix B = A;
     std::cout << "A * B^T = \n" << A * B.transpose() << '\n';
+    auto valuemul = kalmans::Matrix<double>::Random(3, 4);
+    std::cout << "随机矩阵：\n" << valuemul;
+    valuemul *= 3;
+    std::cout << "随机矩阵：\n" << valuemul;
     // 5.6. LU/LUP分解
     kalmans::Matrix<double> lu_mat1(3, 3, { 2, 1, 2, 4, 5, 4, 6, -3, 5 });
     kalmans::Matrix<double> lu_mat2(2, 2, { 0, 1, 0, 1 });
@@ -101,12 +116,20 @@ int main()
     std::cout << diag1;
     // 6.3. 随机阵
     unsigned int seed = 10;
-    auto rand1 = kalmans::Matrix<double>::Random(3, 4);
+    auto rand1 = kalmans::Matrix<double>::Random(4, 3);
     std::cout << rand1;
-    auto rand2 = kalmans::Matrix<double>::Random(3, 4, seed);
+    auto rand2 = kalmans::Matrix<double>::Random(3, 3, seed);
     std::cout << rand2;
-    auto rand3 = kalmans::Matrix<int>::Random(2, 4, 0, 10);
+    auto rand3 = kalmans::Matrix<int>::Random(2, 2, 0, 10);
     std::cout << rand3;
+    // 6.4. 对角阵块
+    auto blkdiag = kalmans::Matrix<double>::BlkDiag({ rand1, rand2 });
+    std::cout << blkdiag;
+    auto blkdiag2 = kalmans::Matrix<int>::BlkDiag(kalmans::Matrix{rand3}, 3);
+    std::cout << blkdiag2;
+    // 6.5. 垂直拼接矩阵
+    auto ver_cat_mat = kalmans::Matrix<double>::ver_mat_cat({ rand1, rand2 });
+    std::cout << ver_cat_mat;
 
     std::cout << "=========== 数据读写 ===========\n";
     kalmans::IOFormat::set_add_head(true);

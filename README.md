@@ -15,11 +15,17 @@ For the following filtering equation:
 
 linearize the discrete model around the current estimate, and the Jacobian matrix is as follows:
 
-$$ \left. A_k=\frac{\partial f(x_k)}{\partial x_k}\right|_{x_k=\hat{x}_{k|k}} $$ 
+```math
+\left. A_k=\frac{\partial f(x_k)}{\partial x_k}\right|_{x_k=\hat{x}_{k|k}}
+```
 
-$$ \left. B_k=\frac{\partial f(x_k)}{\partial u_k}\right|_{x_k=\hat{x}_{k|k}} $$ 
+```math
+\left. B_k=\frac{\partial f(x_k)}{\partial u_k}\right|_{x_k=\hat{x}_{k|k}}
+```
 
-$$ \left. H_{k+1}=\frac{\partial h(x_{k+1})}{\partial x_{k+1}} \right|_{x_{k+1}=\hat{x}_{k+1|k}} $$ 
+```math
+\left. H_{k+1}=\frac{\partial h(x_{k+1})}{\partial x_{k+1}} \right|_{x_{k+1}=\hat{x}_{k+1|k}}
+```
 
 Here we will implement an Extended Kalman Filter to estimate the position, velocity, and acceleration of a target. The example can be found in `example/filter_demo`. You can access the complete demonstration there.
 

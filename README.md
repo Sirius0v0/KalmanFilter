@@ -5,15 +5,19 @@ It is a generic implementation of Kalman Filter, should work for any system.
 
 For the following filtering equation:
 
-$$ \tilde{x}_{k+1}=f\left(\hat{x}_k, u_k, 0\right)+\Gamma_k\omega_k,\quad\omega_k\sim N(0,Q_k) $$ ,
+```math
+\tilde{x}_{k+1}=f\left(\hat{x}_k, u_k, 0\right)+\Gamma_k\omega_k,\quad\omega_k\sim N(0,Q_k)
+```
 
-$$ \tilde{z}_{k+1}=h\left(\tilde{x}_{k+1}\right)+v_{k+1},\quad v_k\sim N(0,R_k) $$ 
+```math
+\tilde{z}_{k+1}=h\left(\tilde{x}_{k+1}\right)+v_{k+1},\quad v_k\sim N(0,R_k)
+```
 
 linearize the discrete model around the current estimate, and the Jacobian matrix is as follows:
 
-$$ \left. A_k=\frac{\partial f(x_k)}{\partial x_k}\right|_{x_k=\hat{x}_{k|k}} $$ ,
+$$ \left. A_k=\frac{\partial f(x_k)}{\partial x_k}\right|_{x_k=\hat{x}_{k|k}} $$ 
 
-$$ \left. B_k=\frac{\partial f(x_k)}{\partial u_k}\right|_{x_k=\hat{x}_{k|k}} $$ ,
+$$ \left. B_k=\frac{\partial f(x_k)}{\partial u_k}\right|_{x_k=\hat{x}_{k|k}} $$ 
 
 $$ \left. H_{k+1}=\frac{\partial h(x_{k+1})}{\partial x_{k+1}} \right|_{x_{k+1}=\hat{x}_{k+1|k}} $$ 
 

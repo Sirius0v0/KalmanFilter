@@ -70,8 +70,8 @@ namespace kalmans
 
         this->setA();
         this->setB();
-        this->setQ();
         this->make_predict();
+        this->setQ();
 
         this->time_update();
     }
@@ -81,8 +81,8 @@ namespace kalmans
         this->z.swap(z);
 
         this->setH();
-        this->setR();
         this->make_measure();
+        this->setR();
 
         this->measure_update();
     }

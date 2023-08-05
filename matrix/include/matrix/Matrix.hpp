@@ -579,7 +579,7 @@ namespace kalmans
             }
 
             // 列主元如果为 0，则跳过该列的消元
-            if (fabs(U(j, j)) < 1e-7)
+            if (fabs(U(j, j)) < DBL_EPSILON)
                 continue;
             // 计算 L 和 U
             for (int i = j + 1; i < this->get_row(); ++i)

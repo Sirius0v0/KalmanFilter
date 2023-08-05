@@ -16,7 +16,7 @@ namespace kalmans
         void time_update() override;
         void measure_update() override;
 
-    private:
         Matrix<double> P_;
+        Matrix<double> x_;
     };
 }

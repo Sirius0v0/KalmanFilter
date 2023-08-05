@@ -94,38 +94,38 @@ void MyEKFilter::setR()
 
 kalmans::Matrix<double> MyEKFilter::compute_H(const std::array<double, 3>& satpos)
 {
-    double e1 = -((satpos[1] - x(3)) * (2 * satpos[0] - 2 * x(0)))
+    double e1 = -((satpos[1] - x_(3)) * (2 * satpos[0] - 2 * x_(0)))
         / (2 * pow(
-            (pow((satpos[0] - x(0)), 2)
-                + pow((satpos[2] - x(6)), 2))
+            (pow((satpos[0] - x_(0)), 2)
+                + pow((satpos[2] - x_(6)), 2))
             , (3 / 2.0))
-            * (pow((satpos[1] - x(3)), 2)
-                / (pow((satpos[0] - x(0)), 2)
-                    + pow((satpos[2] - x(6)), 2)) + 1));
+            * (pow((satpos[1] - x_(3)), 2)
+                / (pow((satpos[0] - x_(0)), 2)
+                    + pow((satpos[2] - x_(6)), 2)) + 1));
     double e2 = pow(
-        (pow((satpos[0] - x(0)), 2)
-            + pow((satpos[2] - x(6)), 2))
+        (pow((satpos[0] - x_(0)), 2)
+            + pow((satpos[2] - x_(6)), 2))
         , (1 / 2.0))
-        / (satpos[1] * satpos[1] - 2 * satpos[1] * x(3)
-            + x(3) * x(3) +
-            pow((satpos[0] - x(0)), 2)
-            + pow((satpos[2] - x(6)), 2));
-    double e3 = -((satpos[1] - x(3)) * (2 * satpos[2] - 2 * x(6)))
+        / (satpos[1] * satpos[1] - 2 * satpos[1] * x_(3)
+            + x_(3) * x_(3) +
+            pow((satpos[0] - x_(0)), 2)
+            + pow((satpos[2] - x_(6)), 2));
+    double e3 = -((satpos[1] - x_(3)) * (2 * satpos[2] - 2 * x_(6)))
         / (2 * pow(
-            (pow((satpos[0] - x(0)), 2)
-                + pow((satpos[2] - x(6)), 2))
+            (pow((satpos[0] - x_(0)), 2)
+                + pow((satpos[2] - x_(6)), 2))
             , (3 / 2.0))
-            * (pow((satpos[1] - x(3)), 2)
-                / (pow((satpos[0] - x(0)), 2)
-                    + pow((satpos[2] - x(6)), 2)) + 1));
-    double e4 = (satpos[2] - x(6)) /
-        (pow((satpos[0] - x(0)), 2) *
-            (pow((satpos[2] - x(6)), 2) /
-                pow((satpos[0] - x(0)), 2) + 1));
+            * (pow((satpos[1] - x_(3)), 2)
+                / (pow((satpos[0] - x_(0)), 2)
+                    + pow((satpos[2] - x_(6)), 2)) + 1));
+    double e4 = (satpos[2] - x_(6)) /
+        (pow((satpos[0] - x_(0)), 2) *
+            (pow((satpos[2] - x_(6)), 2) /
+                pow((satpos[0] - x_(0)), 2) + 1));
     double e5 = -1.0 / (
-        (satpos[0] - x(0)) *
-        (pow((satpos[2] - x(6)), 2)
-            / pow((satpos[0] - x(0)), 2) + 1)
+        (satpos[0] - x_(0)) *
+        (pow((satpos[2] - x_(6)), 2)
+            / pow((satpos[0] - x_(0)), 2) + 1)
         );
     return kalmans::Matrix<double>(2, 9, {
         e1, 0, 0, e2, 0, 0, e3, 0, 0,
@@ -135,17 +135,26 @@ kalmans::Matrix<double> MyEKFilter::compute_H(const std::array<double, 3>& satpo
 
 void MyEKFilter::make_predict()
 {
-    this->acc_forecast.assign({ x(2),x(5),x(8) });
-    this->x = this->A * this->x + this->B * this->acc_forecast;
+    static bool isT0 = true;
+    if (isT0)
+    {
+        this->acc_forecast.assign({ x(2),x(5),x(8) });
+        isT0 = false;
+    }
+    else
+    {
+        this->acc_forecast.assign({ x_(2),x_(5),x_(8) });
+    }
+    this->x_ = this->A * this->x + this->B * this->acc_forecast;
 }
 
 void MyEKFilter::make_measure()
 {
-    this->z_hat(0) = atan((x(3) - SatAPos[1]) / sqrt(
-        pow((x(0) - SatAPos[0]), 2) + pow((x(6) - SatAPos[2]), 2)));
-    this->z_hat(1) = atan((x(6) - SatAPos[2]) / (x(0) - SatAPos[0]));
-    this->z_hat(2) = atan((x(3) - SatBPos[1]) / sqrt(
-        pow((x(0) - SatBPos[0]), 2) + pow((x(6) - SatBPos[2]), 2)));
-    this->z_hat(3) = atan((x(6) - SatBPos[2]) / (x(0) - SatBPos[0]));
+    this->z_hat(0) = atan((x_(3) - SatAPos[1]) / sqrt(
+        pow((x_(0) - SatAPos[0]), 2) + pow((x_(6) - SatAPos[2]), 2)));
+    this->z_hat(1) = atan((x_(6) - SatAPos[2]) / (x_(0) - SatAPos[0]));
+    this->z_hat(2) = atan((x_(3) - SatBPos[1]) / sqrt(
+        pow((x_(0) - SatBPos[0]), 2) + pow((x_(6) - SatBPos[2]), 2)));
+    this->z_hat(3) = atan((x_(6) - SatBPos[2]) / (x_(0) - SatBPos[0]));
 }
 

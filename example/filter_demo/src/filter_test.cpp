@@ -57,6 +57,10 @@ int main()
     kalmans::Matrix<double> u;
     kalmans::Matrix<double> filter_value(measure_data.get_row() + 1, STATE_DIM);
     filter_value.assign(filter.get_state(), STATE_DIM * i);
+
+    // 计时开始
+    auto begin = std::chrono::high_resolution_clock::now();
+
     for (; i < measure_data.get_row(); ++i)
     {
 
@@ -67,6 +71,10 @@ int main()
         filter_value.assign(filter.get_state(), STATE_DIM * (i + 1));
         std::cout << "[Time=" << 2 * (i + 1) << "]" << filter.get_state().transpose() << '\n';
     }
+
+    // 计时结束
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
 
     auto time_stamp = std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::system_clock::now().time_since_epoch()
@@ -84,6 +92,8 @@ int main()
                 << kalmans::IOFormat::set_start_delim("")
                 << kalmans::IOFormat::set_end_delim("")
                 << filter_value;
+            std::cout << "滤波完成，用时" << elapsed.count() * 1e-9 << "秒, 数据保存在"
+                << filter_filename << "中\n";
             file.close();
         }
         else {

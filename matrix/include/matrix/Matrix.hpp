@@ -13,7 +13,6 @@
 #include <sstream>
 #include <istream>
 #include <ostream>
-#include <iomanip>
 
 #include <KFExceptions/KFExceptions.hpp>
 #include <Matrix/IOFormat.h>
@@ -579,7 +578,7 @@ namespace kalmans
             }
 
             // 列主元如果为 0，则跳过该列的消元
-            if (fabs(U(j, j)) < DBL_EPSILON)
+            if (fabs(U(j, j)) < std::numeric_limits<double>::epsilon())
                 continue;
             // 计算 L 和 U
             for (int i = j + 1; i < this->get_row(); ++i)
